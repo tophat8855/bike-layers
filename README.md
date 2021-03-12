@@ -2,6 +2,11 @@
 
 FIXME: description
 
+## TASKS:
+- Get the rules engine working
+- Get the weather api requests working
+- Make this README rad
+
 ## Installation
 
 Download from http://example.com/FIXME.
