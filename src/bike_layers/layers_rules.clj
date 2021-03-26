@@ -1,5 +1,6 @@
 (ns bike-layers.layers-rules
-  (:require [clara.rules :refer :all]))
+  (:require [clara.rules :refer :all]
+            [clara.rules.accumulators :as acc]))
 
 ;; Clothing items:
 ;; Head Gear: Beanie Helmet, Straw Hat helmet, bucket hat helmet, regular helmet
@@ -37,82 +38,118 @@
 
 (defrecord Weather [temperature precipitation])
 
-(defrecord HeadGear [helmet head-addons])
+(defrecord Helmet [helmet])
 
-(defrecord TorsoGear [jacket torso-addons])
+(defrecord HeadAccessories [head-accessories])
+
+(defrecord Jacket [jacket])
+
+(defrecord TorsoAddons [torso-addons])
+
+;; TODO: Make bucket helmet win over other helmets. need custom accumulator?
+#_(defn helmet-unless-bucket-already-there
+  [new-helmet prev-helmet]
+  (if (= prev-helmet :bucket-hat)
+    :bucket-hat
+    new-helmet))
 
 (defrule colder-than-50-wear-warmest-helmet
   "If it's cold out, wear a warm helmet, that's what it's for."
-  [Weather (and (< temperature 50) (< precipitation 20))]
+  [Weather (< temperature 50)]
   =>
-  (insert! (->HeadGear :beanie [:cycowl])))
+  (insert-all! [(->Helmet :beanie)
+                (->HeadAccessories [:cycowl])]))
 
 (defrule between-50-and-60-wear-earmuffs-and-scarf
   "If it's chilly out, keep your neck and ears warm"
   [Weather (and (>= temperature 50)
-                (< temperature 60)
-                (< precipitation 20))]
+                (< temperature 60))]
   =>
-  (insert! (->HeadGear :regular [:earmuffs :scarf])))
+  (insert-all! [(->Helmet :regular)
+                (->HeadAccessories [:earmuffs :scarf])]))
 
-(defrule between-60-and-70-wear-earmuffs
+(defrule between-60-and-70-wear-earmuffs-and-red-jacket
   "If it's cool out, your ears may be nippy"
   [Weather (and (>= temperature 60)
-                (< temperature 70)
-                (< precipitation 20))]
+                (< temperature 70))]
   =>
-  (insert-all! [(->HeadGear :regular [:earmuffs])
-                (->TorsoGear :red-jacket nil)]))
+  (insert-all! [(->Helmet :regular)
+                (->HeadAccessories [:earmuffs])
+                (->Jacket :red-jacket)]))
 
 (defrule between-70-and-80-wear-a-fancy-hat
   "If it's warm, you might still get a little breeze, so wear a nice shawl"
-  [Weather (and (>= temperature 70)
-                (< precipitation 20))]
+  [Weather (>= temperature 70)]
   =>
-  (insert! (->HeadGear :straw-hat nil)))
+  (insert! (->Helmet :straw-hat)))
+
+(defrule under-55-wear-a-hoodie-jacket
+  "this jacket has a couple of layers and will keep you wam"
+  [Weather (and (< temperature 55))]
+  =>
+  (insert! (->Jacket :hoodie)))
 
 (defrule between-55-and-60-wear-blue-jacket
   "this jacket has a couple of layers and will keep you wam"
   [Weather (and (>= temperature 55)
-                (< temperature 60)
-                (< precipitation 20))]
+                (< temperature 60))]
   =>
-  (insert! (->TorsoGear :blue-jacket nil)))
+  (insert! (->Jacket :blue-jacket)))
 
 (defrule between-70-and-75-wear-bright-shawl
   "Bright Shawl will keep you warm if there is a cool breeze"
   [Weather (and (>= temperature 70)
-                (< temperature 75)
-                (< precipitation 20))]
+                (< temperature 75))]
   =>
-  (insert! (->TorsoGear :bright-shawl nil)))
+  (insert! (->Jacket :bright-shawl)))
 
 (defrule between-75-and-80-wear-bright-shawl
   "cool and breezy and keeps the sun off"
   [Weather (and (>= temperature 75)
-                (< temperature 80)
-                (< precipitation 20))]
+                (< temperature 80))]
   =>
-  (insert! (->TorsoGear :lace-poncho nil)))
+  (insert! (->Jacket :lace-poncho)))
 
 (defrule precipitation-more-than-20%-chance
   "keep your head dry"
   [Weather (>= precipitation 20)]
    =>
-   (insert! (->HeadGear :bucket-hat nil)))
+   (insert! (->Helmet :bucket-hat)))
 
-(defquery headgear?
-  "Returns what to wear on my head"
+;;   (acc/reduce-to-accum
+;;    (fn [previous]
+;;      (if previous
+;;        (into [] (concat previous :rain-cape))
+;;        [:rain-cape]))))
+
+(defrule precipitation-more-than-30%-chance
+  "time for the rain cape"
+  [Weather (>= precipitation 30)]
+  =>
+  (insert! (->TorsoAddons [:rain-cape])))
+
+(defquery helmet?
+  "Returns what helmet to wear"
   []
-  [HeadGear (= ?helmet helmet) (= ?head-addons head-addons)])
+  [Helmet (= ?helmet helmet)])
 
-(defquery torsogear?
+(defquery head-accessories?
+  "Returns what to wear on my head and neck"
+  []
+  [HeadAccessories (= ?head-accessories head-accessories)])
+
+(defquery jacket?
   "Returns what to wear on my torso"
   []
-  [TorsoGear (= ?jacket jacket) (= ?torso-addons torso-addons)])
+  [Jacket (= ?jacket jacket)])
+
+(defquery torso-addons?
+  "Returns what to wear on my torso"
+  []
+  [TorsoAddons (= ?torso-addons torso-addons)])
 
 (comment
   (println (-> (mk-session)
                (insert (->Weather 45 0))
                (fire-rules)
-               (query headgear))))
+               (query helmet?))))
