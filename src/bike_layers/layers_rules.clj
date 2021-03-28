@@ -46,13 +46,21 @@
 
 (defrecord TorsoAddons [torso-addons])
 
-;; TODO: Make bucket helmet win over other helmets. need custom accumulator?
-#_(defn helmet-unless-bucket-already-there
-  [new-helmet prev-helmet]
-  (if (= prev-helmet :bucket-hat)
-    :bucket-hat
-    new-helmet))
+;; TODO: Make bucket helmet win over other helmets without it needing to be
+;; above all the other helmet rules. In this case, order is important for it
+;; win out over any other helmet, but we should be able to accomplish this in code,
+;; not with the ordering of the functions in the namespace
+(defrule precipitation-more-than-20%-chance
+  "keep your head dry"
+  [Weather (>= precipitation 20)]
+  =>
+  (insert! (->Helmet :bucket-hat)))
 
+(defrule precipitation-more-than-20%-chance
+  "keep your head dry"
+  [Weather (>= precipitation 20)]
+  =>
+  (insert! (->Helmet :bucket-hat)))
 (defrule colder-than-50-wear-warmest-helmet
   "If it's cold out, wear a warm helmet, that's what it's for."
   [Weather (< temperature 50)]
@@ -109,18 +117,6 @@
                 (< temperature 80))]
   =>
   (insert! (->Jacket :lace-poncho)))
-
-(defrule precipitation-more-than-20%-chance
-  "keep your head dry"
-  [Weather (>= precipitation 20)]
-   =>
-   (insert! (->Helmet :bucket-hat)))
-
-;;   (acc/reduce-to-accum
-;;    (fn [previous]
-;;      (if previous
-;;        (into [] (concat previous :rain-cape))
-;;        [:rain-cape]))))
 
 (defrule precipitation-more-than-30%-chance
   "time for the rain cape"
