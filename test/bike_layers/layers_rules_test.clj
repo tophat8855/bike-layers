@@ -79,5 +79,5 @@
           session               (test-session weather)
           [torso-addons-result] (query session torso-addons?)
           [jacket-result]       (query session jacket?)]
-      (is (= :rain-cape (:?torso-addons torso-result)))
-      (is (= :lace-poncho (:?jacket jacket-result))))))
+      (is (= [:rain-cape] (:?torso-addons torso-addons-result)))
+      (is (= :hoodie (:?jacket jacket-result))))))
