@@ -1,7 +1,6 @@
 (ns bike-layers.core
-  (:gen-class))
+  (:require [bike-layers.open-weather :as weather]))
 
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  (prn weather/current-weather))
