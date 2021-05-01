@@ -26,12 +26,7 @@
 ;; if it's 10% rain or above: rain helmet
 ;; if it's dark out: blue jacket
 
-;; only 1 helmet at a time: beanie, rain, straw, plain
-;; only 1 ear thing at a time: cycowl, earmuff
-;; only 1 torso warm thing at a time: non-bike heavier coat, blue jacket, red jacket, bright shawl
-
 ;; Things to check: precipitation, temperature, daylight (later- get this going first)
-;; should I add the new orange poncho to this list?
 
 ;; I'd really like the rain helmet to override every other helmet in a clear way
 ;; right now, it's just explicit about precification
@@ -143,9 +138,3 @@
   "Returns what to wear on my torso"
   []
   [TorsoAddons (= ?torso-addons torso-addons)])
-
-(comment
-  (println (-> (mk-session)
-               (insert (->Weather 45 0))
-               (fire-rules)
-               (query helmet?))))
