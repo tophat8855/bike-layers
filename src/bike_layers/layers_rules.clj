@@ -45,17 +45,13 @@
 ;; above all the other helmet rules. In this case, order is important for it
 ;; win out over any other helmet, but we should be able to accomplish this in code,
 ;; not with the ordering of the functions in the namespace
-(defrule precipitation-more-than-20%-chance
-  "keep your head dry"
-  [Weather (>= precipitation 20)]
-  =>
-  (insert! (->Helmet :bucket-hat)))
 
 (defrule precipitation-more-than-20%-chance
   "keep your head dry"
   [Weather (>= precipitation 20)]
   =>
   (insert! (->Helmet :bucket-hat)))
+
 (defrule colder-than-50-wear-warmest-helmet
   "If it's cold out, wear a warm helmet, that's what it's for."
   [Weather (< temperature 50)]
@@ -80,8 +76,8 @@
                 (->HeadAccessories [:earmuffs])
                 (->Jacket :red-jacket)]))
 
-(defrule between-70-and-80-wear-a-fancy-hat
-  "If it's warm, you might still get a little breeze, so wear a nice shawl"
+(defrule above-70-wear-a-sun-hat
+  "If it's warm, the sun might be in your eyes"
   [Weather (>= temperature 70)]
   =>
   (insert! (->Helmet :straw-hat)))
